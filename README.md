@@ -1,6 +1,6 @@
->下文中数据准备方式、训练脚本和测试脚本的相关命令均适用于MSHNet-pytorch版本。
->
->pytorch版本所有源码、结果对齐部分提到的pytorch版本的所有图像可在笔者上传的MSHNet_pytorch仓库中查看：https://github.com/Hareplace/MSHNet_pytorch
+>pytorch版本所有源码、结果对齐部分提到的pytorch版本的所有图像可在笔者上传的MSHNet_pytorch仓库中查看，
+>下文中数据准备方式、训练脚本和测试脚本的相关命令、绘制loss曲线和log曲线的命令也均适用于笔者上传的MSHNet-pytorch版本。
+>链接如下：https://github.com/Hareplace/MSHNet_pytorch
 
 # 环境配置
 
