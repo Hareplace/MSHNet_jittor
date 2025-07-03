@@ -57,7 +57,6 @@ def plot_data(df, save_path, title):
 
 
 def plot_log(file_path, save_dir=None):
-    """主处理函数（移除了重复的 plt.close()）"""
     if save_dir is None:
         save_dir = os.path.join(os.path.dirname(file_path), "log_curve")
     Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -93,8 +92,8 @@ def plot_log(file_path, save_dir=None):
         ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
 
         plt.title(f"Training Metrics: {os.path.splitext(file_name)[0]}", pad=20)
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')  # 添加这行
-        plt.close()  # 添加这行
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')  
+        plt.close()  
 
     else:
         raise ValueError(f"Unsupported file format: {file_ext}")
