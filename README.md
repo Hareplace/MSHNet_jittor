@@ -205,7 +205,7 @@ python main.py --dataset-dir "dataset/IRSTD1k" --batch-size 4 --epochs 100 --lr 
 #### 1. 脚本启动方式
 
 ```
-python main.py --dataset-dir "dataset/IRSTD1k" --batch-size 4 --mode "test" --weight-path "/weights/iou_67.86_IRSTD-1k_jittor.npz"
+python main.py --dataset-dir "dataset/IRSTD1k" --batch-size 4 --mode "test" --weight-path "weights/iou_67.86_IRSTD-1k_jittor.npz"
 ```
 
 **权重转换说明**：原始PyTorch权重(`.pkl`)需通过`convert_weights_to_jittor.py`转换为Jittor格式(`.npz`)，验证是否完全转换成功可使用`test.py`，在源码中均给出。
