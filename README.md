@@ -117,18 +117,18 @@ IRSTD-1k/
 
 #### 3.快速配置步骤
 
-在下载下来的的模型目录中，添加**dataset**目录，将IRSTD1k文件夹复制粘贴进去即可，但要注意**将原始文件夹重命名**，使其匹配代码中的默认路径约定：
+在MSHNet_jittor总目录下，添加**dataset**目录，将IRSTD1k文件夹复制粘贴进去即可，但要注意**将原始文件夹重命名**，使其匹配代码中的默认路径约定：
 
 ```
 IRSTD-1k/                → 改为 IRSTD1k/
   ├── IRSTD1k_Img/       → 改为 images/
   └── IRSTD1k_Label/     → 改为 masks/
-  └──test.txt			 → 不变，直接复制即可
+  └──test.txt	         → 不变，直接复制即可
   └──trainval.txt        → 不变，直接复制即可
   └──trainvaltest.txt    → 不变，直接复制即可
 ```
 
-**注意**：于github上传的文件中不包括数据集，需自行下载然后按照上述操作配置。
+**注意**：本仓库以及pytorch版本仓库中不包括数据集文件，需自行下载然后按照上述操作配置。
 
 ### **注意事项**
 
@@ -144,7 +144,10 @@ IRSTD-1k/                → 改为 IRSTD1k/
 ```
 python main --dataset-dir --batch-size --epochs --lr --mode "train"
 ```
-
+如：
+```
+python main --dataset-dir "dataset/IRSTD1k" --batch-size 4 --epochs 100 --lr 0.01 --mode "train"
+```
 #### 2. 核心参数配置
 
 在命令行参数中应包含：
