@@ -1,19 +1,19 @@
 from jittor.optim import Adam
-from utils.data import *               # 你已迁移为 jittor 兼容的 Dataset，可以保留
-from utils.metric import *            # 如果已转成 jittor 版本的 metric，可保留
+from utils.data import *               
+from utils.metric import *            
 from argparse import ArgumentParser
 
-import jittor as jt                   # 核心框架替换为 jittor
-import jittor.dataset as dataset  # 正确导入方式   # Dataset 用的是你自定义的 class，也可以不导入这行
-from model.MSHNet import *            # 模型已改为 jittor 版
-from model.loss import *              # Loss 函数改为 jittor 版
+import jittor as jt                 
+import jittor.dataset as dataset  
+from model.MSHNet import *            
+from model.loss import *              
 
 from tqdm import tqdm
 import os
 import os.path as osp
 import time
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"  # 如果你以后换成GPU，把0改为你想用的GPU编号
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"  
 
 
 
@@ -32,11 +32,11 @@ def parse_args():
     parser.add_argument('--base-size', type=int, default=256)
     parser.add_argument('--crop-size', type=int, default=256)
 
-    # 其他参数（这些对 Jittor 没有实际作用，但可以保留方便对齐 PyTorch 实验）
+   
     parser.add_argument('--multi-gpus', type=bool, default=False)         # 可保留，但 Jittor 自动管理 GPU
-    parser.add_argument('--if-checkpoint', type=bool, default=False)      # 你是否加载 checkpoint
-    parser.add_argument('--mode', type=str, default='train')              # train / val / test
-    parser.add_argument('--weight-path', type=str, default='./weights/iou_67.86_IRSTD-1k_jittor.npz')  # 改为适合 Jittor 的文件名格式
+    parser.add_argument('--if-checkpoint', type=bool, default=False)      # 是否加载 checkpoint
+    parser.add_argument('--mode', type=str, default='train')              # train / test
+    parser.add_argument('--weight-path', type=str, default='weights/iou_67.86_IRSTD-1k_jittor.npz')  # 改为适合 Jittor 的文件名格式
 
     args = parser.parse_args()
     return args
@@ -62,11 +62,11 @@ class Trainer(object):
         # 初始化模型
         self.model = MSHNet(3)
 
-        # Jittor 会自动使用多个 CUDA 核心，无需手动调用 DataParallel
+        
         if args.multi_gpus and jt.has_cuda:
             print(f"Using Jittor with CUDA, device count: {jt.cuda.device_count()}")
 
-        # 优化器，Jittor的Adagrad不需要filter，直接传参数即可
+    
         self.optimizer = Adam(self.model.parameters(), lr=args.lr)
 
         # 最大池化层，Jittor用 nn.MaxPool2d，参数一样
@@ -80,7 +80,7 @@ class Trainer(object):
         self.mIoU = mIoU(1)
         self.ROC = ROCMetric(1, 10)
 
-        # 记录最优IoU和warm epoch参数
+        
         self.best_iou = 0
         self.warm_epoch = args.warm_epoch
         
@@ -112,7 +112,7 @@ class Trainer(object):
                 if not osp.exists(self.save_folder):
                     os.makedirs(self.save_folder)
 
-                # ✅ [新增] 初始化 loss 日志文件路径
+                #  [新增] 初始化 loss 日志文件路径
                 timestamp = time.strftime("%Y%m%d-%H%M%S")
                 self.loss_log_file = osp.join(self.save_folder, f"loss_{timestamp}.txt")
                 self.all_epoch_losses = []  # 存放每轮的平均 loss
@@ -198,7 +198,7 @@ class Trainer(object):
 
         with jt.no_grad():
             for i, (data, mask) in enumerate(tbar):
-                data = data  # Jittor默认会自动放到设备，无需to(device)
+                data = data  
                 mask = mask
 
                 if epoch > self.warm_epoch:
@@ -206,13 +206,9 @@ class Trainer(object):
 
                 _, pred = self.model(data, tag)  # pred是Jittor张量
 
-                # 1. mIoU用Jittor张量直接传（它内部是用张量操作计算的）
-                self.mIoU.update(pred, mask)
-
-                # 2. ROCMetric用Jittor张量直接传（你代码里是张量操作）
+               
+                self.mIoU.update(pred, mask)            
                 self.ROC.update(pred, mask)
-
-
                 self.PD_FA.update(pred, mask)
 
                 # 计算当前mIoU，用于显示
@@ -264,7 +260,7 @@ class Trainer(object):
 if __name__ == '__main__':
     args = parse_args()
 
-    trainer = Trainer(args)  # Trainer 是你用 Jittor 改写后的类
+    trainer = Trainer(args) 
 
     if trainer.mode == 'train':
         for epoch in range(trainer.start_epoch, args.epochs):
