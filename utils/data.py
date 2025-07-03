@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-@Time ： 2025/6/29 20:50
-@Auth ： 孙殿芳
-"""
 import jittor as jt
 from jittor import nn
-import jittor.dataset as dataset  # 如果你用数据集功能
+import jittor.dataset as dataset 
 import numpy as np
 import os
 from PIL import Image, ImageOps, ImageFilter
@@ -42,7 +37,7 @@ class IRSTD_Dataset(dataset.Dataset):
         self.mean = [.485, .456, .406]
         self.std = [.229, .224, .225]
 
-        self.set_attrs(batch_size=args.batch_size, shuffle=True, num_workers=4)  # ✅ 必加
+        self.set_attrs(batch_size=args.batch_size, shuffle=True, num_workers=4)  
 
     def __getitem__(self, i):
         name = self.names[i]
@@ -86,8 +81,8 @@ class IRSTD_Dataset(dataset.Dataset):
             res.append(t)
         return jt.stack(res, dim=0)
 
-    # 以下_sync_transform和_testval_sync_transform代码不变
-    # 直接用PIL进行操作即可
+    
+   
     def _sync_transform(self, img, mask):
         # random mirror
         if random.random() < 0.5:
