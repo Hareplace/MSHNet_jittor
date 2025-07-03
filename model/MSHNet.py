@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-@Time ： 2025/6/29 20:48
-@Auth ： 孙殿芳
-"""
 import jittor as jt
 from jittor import nn
 import jittor.nn as F
@@ -55,7 +50,7 @@ class ResNet(nn.Module):
                 nn.BatchNorm(out_channels)
             )
         else:
-            self.shortcut = nn.Identity()  # 🔁 推荐不要设为 None
+            self.shortcut = nn.Identity()  # 不要设为 None
 
         self.ca = ChannelAttention(out_channels)
         self.sa = SpatialAttention()
@@ -86,7 +81,7 @@ class MSHNet(nn.Module):
         self.up = nn.Upsample(scale_factor=2, mode='bilinear')
         self.up_4 = nn.Upsample(scale_factor=4, mode='bilinear')
         self.up_8 = nn.Upsample(scale_factor=8, mode='bilinear')
-        self.up_16 = nn.Upsample(scale_factor=4, mode='bilinear')  # ❗注意：这里原代码 up_16 是 scale=4 还是错写了？
+        self.up_16 = nn.Upsample(scale_factor=4, mode='bilinear')  
 
         self.conv_init = nn.Conv(input_channels, param_channels[0], 1, 1)
 
