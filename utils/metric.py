@@ -1,21 +1,16 @@
-# -*- coding: utf-8 -*-
-"""
-@Time ： 2025/6/29 20:50
-@Auth ： 孙殿芳
-"""
 import jittor as jt
 import jittor.nn as nn
 import jittor
 from skimage.measure import label
 from skimage import measure
-# 然后直接调用 label(predits, connectivity=2)
+
 
 import numpy as np
 
 class ROCMetric():
     """Computes pixAcc and mIoU metric scores
     """
-    def __init__(self, nclass, bins):  #bin的意义实际上是确定ROC曲线上的threshold取多少个离散值
+    def __init__(self, nclass, bins):  
         super(ROCMetric, self).__init__()
         self.nclass = nclass
         self.bins = bins
@@ -147,8 +142,7 @@ class mIoU():
 
     def update(self, preds, labels):
         # print('come_ininin')
-        #只要保证 update 里接收的 preds 和 labels 是 numpy 数组即可（或自行转成 numpy）。
-
+        
         correct, labeled = batch_pix_accuracy(preds, labels)
         inter, union = batch_intersection_union(preds, labels, self.nclass)
         self.total_correct += correct
