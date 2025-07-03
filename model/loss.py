@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-@Time ： 2025/6/29 20:48
-@Auth ： 孙殿芳
-"""
 import jittor.nn as nn
 import numpy as np
 import jittor as jt
@@ -43,7 +38,7 @@ def Dice(pred, target, warm_epoch=1, epoch=1, layer=0):
 
 
 def LLoss(pred, target):
-    loss = jt.array(0.0)  # 允许求导
+    loss = jt.array(0.0) 
 
     patch_size = pred.shape[0]
     h = pred.shape[2]
@@ -92,7 +87,7 @@ class SLSIoULoss(nn.Module):
 
         loss = (intersection_sum + smooth) / (pred_sum + target_sum - intersection_sum + smooth)
 
-        lloss = LLoss(pred, target)  # 确认LLoss也迁移到Jittor版本
+        lloss = LLoss(pred, target)  
 
         if epoch > warm_epoch:
             siou_loss = alpha * loss
