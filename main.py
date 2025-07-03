@@ -1,5 +1,4 @@
 from jittor.optim import Adam
-from utils.grad_clip import *
 from utils.data import *               # 你已迁移为 jittor 兼容的 Dataset，可以保留
 from utils.metric import *            # 如果已转成 jittor 版本的 metric，可保留
 from argparse import ArgumentParser
