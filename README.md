@@ -16,7 +16,7 @@
 
   - **Jittor**: 1.3.8.1
   - **scikit-image**: 最新版（图像处理库，需`measure.label`和`regionprops`功能）
-  - **pandas**:1.5.0（读取log.csc，绘图需要)
+  - **pandas**:1.5.0（读取log.csv，绘图需要)
 
 - **安装命令**:
 
@@ -142,11 +142,11 @@ IRSTD-1k/                → 改为 IRSTD1k/
 #### 1. 脚本启动方式
 
 ```
-python main --dataset-dir --batch-size --epochs --lr --mode "train"
+python main.py --dataset-dir --batch-size --epochs --lr --mode "train"
 ```
 如：
 ```
-python main --dataset-dir "dataset/IRSTD1k" --batch-size 4 --epochs 100 --lr 0.01 --mode "train"
+python main.py --dataset-dir "dataset/IRSTD1k" --batch-size 4 --epochs 100 --lr 0.01 --mode "train"
 ```
 #### 2. 核心参数配置
 
@@ -361,7 +361,7 @@ python utils/plot_loss.py "weights/MSHNet-2025-07-01-23-30-50/loss_20250701-2330
 
 ## 性能日志
 
-两个版本的训练性能log均保存在`result`目录下，以`txt`形式存储，形如`train_pref_log_时间戳.txt`，记录每轮训练花费时间（ Epoch time）batch平均花费时间（ Avg batch time）以及Train FPS的情况，可自行查看，如https://github.com/Hareplace/MSHNet_jittor/blob/master/result/train_perf_log_2025-07-02-20-47-09.txt
+两个版本的训练性能log均保存在`result`目录下，以`txt`形式存储，形如`train_perf_log_时间戳.txt`，记录每轮训练花费时间（ Epoch time）batch平均花费时间（ Avg batch time）以及Train FPS的情况，可自行查看，如https://github.com/Hareplace/MSHNet_jittor/blob/master/result/train_perf_log_2025-07-02-20-47-09.txt
 
 在`utils`文件夹下有`plot_log.py`，可将该`txt`可视化，运行命令示例为：
 
@@ -371,7 +371,7 @@ python utils/plot_log.py "result/train_perf_log_2025-07-02-09-11-22.txt"
 
 可视化后的图像将保存在`result`目录下的`log_curve`中（若不存在则可自动创建）。
 
-两个版本的train_pref_log图像如下所示：
+两个版本的train_perf_log图像如下所示：
 
 #### jittor版：
 
