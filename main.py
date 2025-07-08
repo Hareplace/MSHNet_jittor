@@ -41,7 +41,48 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 class Trainer(object):
+
+    def visualize_prediction(self, image, pred, gt, save_path):
+        """
+        显示：原图 + 预测掩码（黑白+绿框） + 真实掩码（黑白+红框）
+        """
+        import cv2
+        import numpy as np
+
+        # ---- Step 1: Tensor -> Numpy ----
+        image = image.numpy()
+        pred = pred.numpy()
+        gt = gt.numpy()
+
+        # ---- Step 2: 原图恢复 ----
+        if image.shape[0] == 3:
+            image = np.transpose(image, (1, 2, 0))  # [C,H,W] -> [H,W,C]
+        else:
+            image = np.stack([image.squeeze()] * 3, axis=-1)  # 灰度图重复 3 通道
+        image = ((image - image.min()) / (image.max() - image.min()) * 255).astype(np.uint8)
+
+        # ---- Step 3: Mask 预处理为二值图 ----
+        pred_mask = (pred > 0.5).astype(np.uint8).squeeze() * 255  # shape: [H,W]
+        gt_mask = gt.squeeze().astype(np.uint8) * 255              # shape: [H,W]
+
+        # ---- Step 4: 将二值图转为3通道黑白图，并加轮廓框 ----
+        def make_mask_vis(mask, color=(0,255,0)):
+            vis = np.stack([mask]*3, axis=-1)  # gray -> 3 channels
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for cnt in contours:
+                x, y, w, h = cv2.boundingRect(cnt)
+                cv2.rectangle(vis, (x, y), (x + w, y + h), color, 1)
+            return vis
+
+        pred_vis = make_mask_vis(pred_mask, color=(0,255,0))  # green for pred
+        gt_vis   = make_mask_vis(gt_mask,   color=(0,0,255))  # red for GT
+
+        # ---- Step 5: 拼接三图 ----
+        concat = cv2.hconcat([image, pred_vis, gt_vis])
+        cv2.imwrite(save_path, concat)
+
     def __init__(self, args):
         assert args.mode in ['train', 'test']
 
@@ -62,11 +103,11 @@ class Trainer(object):
         # 初始化模型
         self.model = MSHNet(3)
 
-        
+        # Jittor 会自动使用多个 CUDA 核心，无需手动调用 DataParallel
         if args.multi_gpus and jt.has_cuda:
             print(f"Using Jittor with CUDA, device count: {jt.cuda.device_count()}")
 
-    
+        # 优化器，Jittor的Adagrad不需要filter，直接传参数即可
         self.optimizer = Adam(self.model.parameters(), lr=args.lr)
 
         # 最大池化层，Jittor用 nn.MaxPool2d，参数一样
@@ -80,7 +121,7 @@ class Trainer(object):
         self.mIoU = mIoU(1)
         self.ROC = ROCMetric(1, 10)
 
-        
+        # 记录最优IoU和warm epoch参数
         self.best_iou = 0
         self.warm_epoch = args.warm_epoch
         
@@ -98,7 +139,7 @@ class Trainer(object):
                 print(f"Loading checkpoint from: {args.weight_path}")
                 self.model.load(args.weight_path)  # 直接加载 .npz 权重文件
 
-                # 如果你未来有保存 optimizer 的权重，可以用 jt.load 加载 dict
+                # 如果未来有保存 optimizer 的权重，可以用 jt.load 加载 dict
                 # checkpoint = jt.load(args.weight_path)
                 # self.model.load_parameters(checkpoint['model'])
                 # self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -112,7 +153,7 @@ class Trainer(object):
                 if not osp.exists(self.save_folder):
                     os.makedirs(self.save_folder)
 
-                #  [新增] 初始化 loss 日志文件路径
+                # ✅ [新增] 初始化 loss 日志文件路径
                 timestamp = time.strftime("%Y%m%d-%H%M%S")
                 self.loss_log_file = osp.join(self.save_folder, f"loss_{timestamp}.txt")
                 self.all_epoch_losses = []  # 存放每轮的平均 loss
@@ -198,7 +239,7 @@ class Trainer(object):
 
         with jt.no_grad():
             for i, (data, mask) in enumerate(tbar):
-                data = data  
+                data = data  # Jittor默认会自动放到设备，无需to(device)
                 mask = mask
 
                 if epoch > self.warm_epoch:
@@ -206,9 +247,13 @@ class Trainer(object):
 
                 _, pred = self.model(data, tag)  # pred是Jittor张量
 
-               
-                self.mIoU.update(pred, mask)            
+                # 1. mIoU用Jittor张量直接传
+                self.mIoU.update(pred, mask)
+
+                # 2. ROCMetric用Jittor张量直接传
                 self.ROC.update(pred, mask)
+
+
                 self.PD_FA.update(pred, mask)
 
                 # 计算当前mIoU，用于显示
@@ -257,10 +302,32 @@ class Trainer(object):
             print('Fa: {:.4f}\n'.format(FA[0] * 1000000))
 
 
+        # ✅ 保存可视化图像（仅训练最后几轮）
+        if self.mode == 'train' and epoch >= self.args.epochs - 5:  # 最后5轮保存
+            save_vis_dir = osp.join(self.result_dir, 'vis', f'epoch_{epoch}')
+            os.makedirs(save_vis_dir, exist_ok=True)
+
+            with jt.no_grad():
+                for i, (data, mask) in enumerate(self.val_loader):
+                    if i >= 5:
+                        break  # 每轮只保存前5张
+                    _, pred = self.model(data, tag)
+                    for b in range(data.shape[0]):
+                        img = data[b]
+                        pd = pred[b]
+                        gt = mask[b]
+
+                        # save_path = osp.join(save_vis_dir, f"sample_{i*data.shape[0]+b}.png")
+                        save_path = osp.join(save_vis_dir, f"img_{i * self.args.batch_size + b}.png")
+
+                        self.visualize_prediction(img, pd, gt, save_path,)
+
+
+
 if __name__ == '__main__':
     args = parse_args()
 
-    trainer = Trainer(args) 
+    trainer = Trainer(args)  
 
     if trainer.mode == 'train':
         for epoch in range(trainer.start_epoch, args.epochs):
